@@ -47,6 +47,11 @@ app.get('/api/persons', (req, res) => {
     res.json(persons)
 })
 
+app.get('/info', (req, res) => {
+    const numberTotal = Math.max(...persons.map(n => n.id))
+    res.send('<p>Puhelinluettelossa ' + numberTotal + ' henkilön tiedot<br>' + Date() + '</p>')
+})
+
 const PORT = 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
