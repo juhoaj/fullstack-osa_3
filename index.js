@@ -1,8 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -53,7 +55,7 @@ let persons = [
 ]
 
 app.get('/', (req, res) => {
-    res.send('<h1>Hello World!</h1>')
+    res.send('<h1>Hello from backend!</h1>')
 })
 
 
@@ -66,6 +68,7 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
+    /*
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
 
@@ -74,6 +77,11 @@ app.get('/api/persons/:id', (request, response) => {
     } else {
         response.status(404).end()
     }
+    */
+
+    Person.findById(request.params.id).then(person => {
+        response.json(person.toJSON())
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -95,13 +103,14 @@ const generateId = () => {
 app.post('/api/persons', (request, response) => {
 
     const body = request.body
-    
-    if (body.name === undefined || body.number === undefined ) {
-      return response.status(400).json({ 
-        error: 'undefined content' 
-      })
+
+    if (body.name === undefined || body.number === undefined) {
+        return response.status(400).json({
+            error: 'undefined content'
+        })
     }
 
+    /*
     if ( persons.filter(e => e.name.toUpperCase().includes(body.name.toUpperCase())).length > 0 ) {
         return response.status(400).json({ 
           error: 'name must be unique' 
@@ -112,14 +121,17 @@ app.post('/api/persons', (request, response) => {
     function getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
+    */
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: getRandomInt(1000000),
-    }
+        // id: getRandomInt(1000000),
+    })
 
     persons = persons.concat(person)
 
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson.toJSON())
+    })
 })
