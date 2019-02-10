@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
-
+/*
 let persons = [
     {
         "name": "Arto Hellas",
@@ -53,25 +53,31 @@ let persons = [
         "id": 7
     }
 ]
-
+*/
 app.get('/', (req, res) => {
     res.send('<h1>Hello from backend!</h1>')
 })
 
-
+/*
 app.get('/info', (req, res) => {
     res.send('<p>Puhelinluettelossa ' + persons.length + ' henkilön tiedot<br>' + Date() + '</p>')
 })
+*/
 
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
+app.get('/api/persons', (request, response) => {
+    // response.json(persons)
+
+    Person.find().then( result => {
+            response.json(result)
+        }
+    )
 })
 
 app.get('/api/persons/:id', (request, response) => {
     /*
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
-
+ 
     if (person) {
         response.json(person)
     } else {
@@ -84,21 +90,15 @@ app.get('/api/persons/:id', (request, response) => {
     })
 })
 
+/*
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id);
     persons = persons.filter(person => person.id !== id);
 
     response.status(204).end();
 });
+*/
 
-
-
-const generateId = () => {
-    const maxId = persons.length > 0
-        ? Math.max(...persons.map(n => n.id))
-        : 0
-    return maxId + 1
-}
 
 app.post('/api/persons', (request, response) => {
 
@@ -117,7 +117,7 @@ app.post('/api/persons', (request, response) => {
         })
       }
     
-
+ 
     function getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
@@ -129,7 +129,7 @@ app.post('/api/persons', (request, response) => {
         // id: getRandomInt(1000000),
     })
 
-    persons = persons.concat(person)
+    // persons = persons.concat(person)
 
     person.save().then(savedPerson => {
         response.json(savedPerson.toJSON())
