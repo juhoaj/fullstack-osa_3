@@ -7,7 +7,7 @@ const cors = require('cors')
 app.use(cors())
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
-
+app.use(express.static('build'))
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
