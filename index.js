@@ -1,5 +1,13 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
+
+const PORT = 3001
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
 
 let persons = [
     {
@@ -45,8 +53,7 @@ app.get('/', (req, res) => {
 
 
 app.get('/info', (req, res) => {
-    const numberTotal = Math.max(...persons.map(n => n.id))
-    res.send('<p>Puhelinluettelossa ' + numberTotal + ' henkilön tiedot<br>' + Date() + '</p>')
+    res.send('<p>Puhelinluettelossa ' + persons.length + ' henkilön tiedot<br>' + Date() + '</p>')
 })
 
 app.get('/api/persons', (req, res) => {
@@ -71,7 +78,43 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end();
 });
 
-const PORT = 3001
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+
+
+const generateId = () => {
+    const maxId = persons.length > 0
+        ? Math.max(...persons.map(n => n.id))
+        : 0
+    return maxId + 1
+}
+
+app.post('/api/persons', (request, response) => {
+
+    const body = request.body
+    
+    if (body.name === undefined || body.number === undefined ) {
+      return response.status(400).json({ 
+        error: 'undefined content' 
+      })
+    }
+
+    if ( persons.filter(e => e.name.toUpperCase().includes(body.name.toUpperCase())).length > 0 ) {
+        return response.status(400).json({ 
+          error: 'name must be unique' 
+        })
+      }
+    
+
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    const person = {
+        name: body.name,
+        number: body.number,
+        id: getRandomInt(1000000),
+    }
+
+    persons = persons.concat(person)
+
+    response.json(person)
 })
