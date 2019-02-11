@@ -9,6 +9,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
 
+
 app.use(cors())
 app.use(express.static('build'))
 app.use(bodyParser.json())
@@ -128,7 +129,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
 
     const body = request.body
 
@@ -137,6 +138,8 @@ app.post('/api/persons', (request, response) => {
             error: 'undefined content'
         })
     }
+
+
 
     /*
     if ( persons.filter(e => e.name.toUpperCase().includes(body.name.toUpperCase())).length > 0 ) {
@@ -150,13 +153,14 @@ app.post('/api/persons', (request, response) => {
         return Math.floor(Math.random() * Math.floor(max));
     }
     */
-   
+
     const person = new Person({
         name: body.name,
         number: body.number,
         // id: getRandomInt(1000000),
     })
-    
+
+    /*
     Person.count({name: person.name})
         .then(maara=> {
             if (maara > 0) {
@@ -166,13 +170,14 @@ app.post('/api/persons', (request, response) => {
                 })
             }
         })
-
-
+    */
     // persons = persons.concat(person)
 
-    person.save().then(savedPerson => {
-        response.json(savedPerson.toJSON())
-    })
+    person.save()
+        .then(savedPerson => {
+            response.json(savedPerson.toJSON())
+        })
+        .catch(error => next(error))
 })
 
 
@@ -193,8 +198,9 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
         return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
     }
-
     next(error)
 }
 
