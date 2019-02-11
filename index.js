@@ -124,7 +124,6 @@ app.delete('/api/persons/:id', (request, response, next) => {
             console.log('person deleted')
         })
         .catch(error => next(error))
-
 });
 
 
@@ -144,19 +143,30 @@ app.post('/api/persons', (request, response) => {
         return response.status(400).json({ 
           error: 'name must be unique' 
         })
-      }
+    }
     
  
     function getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
     */
-
+   
     const person = new Person({
         name: body.name,
         number: body.number,
         // id: getRandomInt(1000000),
     })
+    
+    Person.count({name: person.name})
+        .then(maara=> {
+            if (maara > 0) {
+                console.log('löyty')
+                return response.status(400).json({ 
+                    error: 'name must be unique' 
+                })
+            }
+        })
+
 
     // persons = persons.concat(person)
 
