@@ -87,7 +87,7 @@ app.get('/api/persons/:id', (request, response, next) => {
     /*
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
- 
+
     if (person) {
         response.json(person)
     } else {
@@ -125,7 +125,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
             console.log('person deleted')
         })
         .catch(error => next(error))
-});
+})
 
 
 
@@ -143,12 +143,12 @@ app.post('/api/persons', (request, response, next) => {
 
     /*
     if ( persons.filter(e => e.name.toUpperCase().includes(body.name.toUpperCase())).length > 0 ) {
-        return response.status(400).json({ 
-          error: 'name must be unique' 
+        return response.status(400).json({
+          error: 'name must be unique'
         })
     }
-    
- 
+
+
     function getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
@@ -165,8 +165,8 @@ app.post('/api/persons', (request, response, next) => {
         .then(maara=> {
             if (maara > 0) {
                 console.log('löyty')
-                return response.status(400).json({ 
-                    error: 'name must be unique' 
+                return response.status(400).json({
+                    error: 'name must be unique'
                 })
             }
         })
@@ -196,7 +196,7 @@ app.use(unknownEndpoint)
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
 
-    if (error.name === 'CastError' && error.kind == 'ObjectId') {
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
         return response.status(400).send({ error: 'malformatted id' })
     } else if (error.name === 'ValidationError') {
         return response.status(400).json({ error: error.message })
