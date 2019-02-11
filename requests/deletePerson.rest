@@ -1,0 +1,5 @@
+DELETE http://localhost:3001/api/persons/jee
+Content-Type: application/json
+
+{ 
+}

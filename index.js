@@ -67,9 +67,9 @@ app.get('/info', (req, res) => {
 app.get('/api/persons', (request, response) => {
     // response.json(persons)
 
-    Person.find().then( result => {
-            response.json(result)
-        }
+    Person.find().then(result => {
+        response.json(result)
+    }
     )
 })
 
@@ -85,19 +85,36 @@ app.get('/api/persons/:id', (request, response) => {
     }
     */
 
-    Person.findById(request.params.id).then(person => {
-        response.json(person.toJSON())
-    })
+    Person.findById(request.params.id)
+        .then(person => {
+            
+            
+            if (person) {
+                response.json(person.toJSON())
+                console.log('queried and created a person for response')
+            } else {
+                response.status(404).end()
+                console.log('queried and created failed to create a person for response')
+            }
+        })
+        .catch(error => {
+            console.log('unsuccesfully queried person, malformatted id')
+            console.log(error);
+            response.status(400).send({ error: 'malformatted id' })
+
+        })
 })
 
-/*
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id);
-    persons = persons.filter(person => person.id !== id);
 
+app.delete('/api/persons/:id', (request, response) => {
+    // const id = Number(request.params.id);
+    // persons = persons.filter(person => person.id !== id);
+    Person.deleteOne({ _id: request.params.id }, function (error) {
+        if (error) console.log("error on delete query");
+    });
     response.status(204).end();
 });
-*/
+
 
 
 app.post('/api/persons', (request, response) => {
