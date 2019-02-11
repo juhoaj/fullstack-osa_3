@@ -1,4 +1,7 @@
-require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
+
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
@@ -7,14 +10,11 @@ const cors = require('cors')
 const Person = require('./models/person')
 
 app.use(cors())
+app.use(express.static('build'))
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
-app.use(express.static('build'))
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
+
 /*
 let persons = [
     {
@@ -54,6 +54,15 @@ let persons = [
     }
 ]
 */
+
+
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
+
+
+
 app.get('/', (req, res) => {
     res.send('<h1>Hello from backend!</h1>')
 })
@@ -69,11 +78,11 @@ app.get('/api/persons', (request, response) => {
 
     Person.find().then(result => {
         response.json(result)
-    }
-    )
+    })
+
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     /*
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
@@ -84,35 +93,38 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).end()
     }
     */
-
     Person.findById(request.params.id)
         .then(person => {
-            
-            
             if (person) {
                 response.json(person.toJSON())
                 console.log('queried and created a person for response')
             } else {
-                response.status(404).end()
+                response.status(204).end()
                 console.log('queried and created failed to create a person for response')
             }
         })
+        /*
         .catch(error => {
             console.log('unsuccesfully queried person, malformatted id')
             console.log(error);
             response.status(400).send({ error: 'malformatted id' })
 
         })
+        */
+        .catch(error => next(error))
 })
 
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     // const id = Number(request.params.id);
     // persons = persons.filter(person => person.id !== id);
-    Person.deleteOne({ _id: request.params.id }, function (error) {
-        if (error) console.log("error on delete query");
-    });
-    response.status(204).end();
+    Person.findByIdAndRemove(request.params.id)
+        .then(result => {
+            response.status(204).end()
+            console.log('person deleted')
+        })
+        .catch(error => next(error))
+
 });
 
 
@@ -152,3 +164,28 @@ app.post('/api/persons', (request, response) => {
         response.json(savedPerson.toJSON())
     })
 })
+
+
+
+//  kyselee kummia eli olemattomien osoitteiden käsittely
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+
+// virheellisten pyyntöjen käsittely
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError' && error.kind == 'ObjectId') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
